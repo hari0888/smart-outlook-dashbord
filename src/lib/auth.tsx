@@ -1,23 +1,19 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 
 /**
  * Lightweight demo auth.
- * - No backend; credentials are hardcoded below.
- * - Session is persisted in localStorage under `demo-auth-user`.
- * - Replace this whole file with a real auth provider (Lovable Cloud /
- *   Supabase / Auth.js / etc.) when you wire up a real backend.
+ * - No backend, no password field anywhere — `signIn()` takes no credentials,
+ *   matching how the real Microsoft OAuth popup will work once MSAL is wired up.
+ * - Only the resulting session (name/email/initials) is cached in localStorage,
+ *   the same way MSAL caches its session — never a username or password.
+ * - Replace this whole file with a real auth provider (MSAL / Supabase / Auth.js /
+ *   etc.) when you wire up a real backend.
  */
 
-export const DEMO_CREDENTIALS = {
+const DEMO_USER: AuthUser = {
   email: "demo@outlook.com",
-  password: "demo123",
+  name: "Demo User",
+  initials: "DU",
 };
 
 export type AuthUser = {
@@ -26,18 +22,12 @@ export type AuthUser = {
   initials: string;
 };
 
-const DEMO_USER: AuthUser = {
-  email: DEMO_CREDENTIALS.email,
-  name: "Demo User",
-  initials: "DU",
-};
-
-const STORAGE_KEY = "demo-auth-user";
+const STORAGE_KEY = "outlook-ai-session";
 
 type AuthContextValue = {
   user: AuthUser | null;
   ready: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: () => Promise<void>;
   signOut: () => void;
 };
 
@@ -57,11 +47,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setReady(true);
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const ok =
-      email.trim().toLowerCase() === DEMO_CREDENTIALS.email &&
-      password === DEMO_CREDENTIALS.password;
-    if (!ok) throw new Error("Invalid email or password.");
+  const signIn = useCallback(async () => {
+    // Stands in for the Microsoft OAuth popup — no credentials are collected
+    // or stored here. Only the resulting session is cached, just like MSAL does.
     localStorage.setItem(STORAGE_KEY, JSON.stringify(DEMO_USER));
     setUser(DEMO_USER);
   }, []);
@@ -72,9 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, ready, signIn, signOut }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ user, ready, signIn, signOut }}>{children}</AuthContext.Provider>
   );
 }
 

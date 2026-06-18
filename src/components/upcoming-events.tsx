@@ -67,9 +67,7 @@ export function UpcomingEvents({
                 <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                   {fmtDay(e.start)}
                 </span>
-                <span className="text-sm font-semibold text-foreground">
-                  {fmtTime(e.start)}
-                </span>
+                <span className="text-sm font-semibold text-foreground">{fmtTime(e.start)}</span>
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">

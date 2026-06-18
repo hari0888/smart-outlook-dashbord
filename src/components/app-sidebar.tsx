@@ -1,14 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import {
-  LayoutDashboard,
-  Mail,
-  Calendar,
-  Sparkles,
-  Bell,
-  Settings,
-  Inbox,
-  ShieldCheck,
-} from "lucide-react";
+import { LayoutDashboard, Mail, Calendar, Sparkles, Bell, Settings, Inbox } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -21,18 +12,13 @@ import {
   SidebarMenuItem,
   SidebarFooter,
 } from "@/components/ui/sidebar";
+import { emails } from "@/lib/mock-data";
 
 const nav = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Email", url: "/mail", icon: Mail },
   { title: "Calendar", url: "/calendar", icon: Calendar },
   { title: "Insights", url: "/insights", icon: Sparkles },
-  { title: "Verify setup", url: "/verify", icon: ShieldCheck },
-];
-
-const folders = [
-  { title: "Inbox", url: "/mail", icon: Inbox, count: 3, filter: "all" as const },
-  { title: "Priority", url: "/mail", icon: Bell, count: 3, filter: "priority" as const },
 ];
 
 export function AppSidebar() {
@@ -41,6 +27,13 @@ export function AppSidebar() {
     if (path === "/") return currentPath === "/";
     return currentPath.startsWith(path.split("?")[0]);
   };
+
+  const unread = emails.filter((e) => !e.isRead).length;
+  const priority = emails.filter((e) => e.isPriority).length;
+  const folders = [
+    { title: "Inbox", url: "/mail", icon: Inbox, count: unread, filter: "all" as const },
+    { title: "Priority", url: "/mail", icon: Bell, count: priority, filter: "priority" as const },
+  ];
 
   return (
     <Sidebar collapsible="icon">

@@ -81,11 +81,8 @@ function VerifyPage() {
       description:
         "Loads the emails array and checks shape (from, subject, receivedAt). On real Graph data this verifies your /me/messages access.",
       run: async () => {
-        if (!Array.isArray(emails) || emails.length === 0)
-          throw new Error("No emails available.");
-        const bad = emails.find(
-          (e) => !e.from?.email || !e.subject || !e.receivedAt,
-        );
+        if (!Array.isArray(emails) || emails.length === 0) throw new Error("No emails available.");
+        const bad = emails.find((e) => !e.from?.email || !e.subject || !e.receivedAt);
         if (bad) throw new Error(`Malformed email id=${bad.id}`);
         const unread = emails.filter((e) => !e.isRead).length;
         const priority = emails.filter((e) => e.isPriority).length;
@@ -135,7 +132,6 @@ function VerifyPage() {
   const runAll = useCallback(async () => {
     setRunningAll(true);
     for (const step of steps) {
-      // eslint-disable-next-line no-await-in-loop
       const ok = await runStep(step);
       if (!ok) break;
     }
@@ -163,8 +159,8 @@ function VerifyPage() {
             <div>
               <CardTitle>End-to-end checks</CardTitle>
               <CardDescription>
-                Run individual steps or all of them. Each step shows what it checked and the
-                value it observed.
+                Run individual steps or all of them. Each step shows what it checked and the value
+                it observed.
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -189,22 +185,22 @@ function VerifyPage() {
             {!user && (
               <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm">
                 You're not signed in. The auth step will fail. Use the button below or go to{" "}
-                <a href="/login" className="underline">/login</a>.
+                <a href="/login" className="underline">
+                  /login
+                </a>
+                .
                 <div className="mt-2 flex gap-2">
                   <Button
                     size="sm"
                     onClick={async () => {
                       try {
-                        // Demo signIn takes (email, password); real MSAL signIn takes none.
-                        // Cast loosely so this page works in both setups.
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        await (signIn as any)("demo@outlook.com", "demo123");
+                        await signIn();
                       } catch {
                         /* ignored; the auth step will surface the error */
                       }
                     }}
                   >
-                    Sign in with demo account
+                    Sign in with Microsoft
                   </Button>
                 </div>
               </div>
@@ -225,10 +221,7 @@ function VerifyPage() {
               {steps.map((step) => {
                 const r = results[step.id] ?? { status: "idle" as StepStatus };
                 return (
-                  <li
-                    key={step.id}
-                    className="rounded-md border border-border bg-card p-4"
-                  >
+                  <li key={step.id} className="rounded-md border border-border bg-card p-4">
                     <div className="flex items-start gap-3">
                       <StatusIcon status={r.status} />
                       <div className="flex-1 space-y-1">
@@ -274,11 +267,10 @@ function VerifyPage() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <p>
-              On the demo build this confirms the mock pipeline is intact. After you switch to
-              real Microsoft Graph (see the README), the same checks exercise your live OAuth
-              token, <code>/me</code>, <code>/me/messages</code>, and{" "}
-              <code>/me/calendarView</code> calls — so a green run means your Outlook account
-              is fully wired up.
+              On the demo build this confirms the mock pipeline is intact. After you switch to real
+              Microsoft Graph (see the README), the same checks exercise your live OAuth token,{" "}
+              <code>/me</code>, <code>/me/messages</code>, and <code>/me/calendarView</code> calls —
+              so a green run means your Outlook account is fully wired up.
             </p>
           </CardContent>
         </Card>
@@ -290,8 +282,7 @@ function VerifyPage() {
 function StatusIcon({ status }: { status: StepStatus }) {
   if (status === "running")
     return <Loader2 className="mt-0.5 h-5 w-5 animate-spin text-muted-foreground" />;
-  if (status === "pass")
-    return <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-500" />;
+  if (status === "pass") return <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-500" />;
   if (status === "fail") return <XCircle className="mt-0.5 h-5 w-5 text-destructive" />;
   return <Circle className="mt-0.5 h-5 w-5 text-muted-foreground" />;
 }
