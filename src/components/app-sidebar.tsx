@@ -29,8 +29,8 @@ const nav = [
 ];
 
 const folders = [
-  { title: "Inbox", url: "/mail", icon: Inbox, count: 3 },
-  { title: "Priority", url: "/mail?filter=priority", icon: Bell, count: 3 },
+  { title: "Inbox", url: "/mail", icon: Inbox, count: 3, filter: "all" as const },
+  { title: "Priority", url: "/mail", icon: Bell, count: 3, filter: "priority" as const },
 ];
 
 export function AppSidebar() {
