@@ -80,7 +80,7 @@ export function AppSidebar() {
               {folders.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
-                    <Link to="/mail">
+                    <Link to="/mail" search={{ filter: item.filter }}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                       <span className="ml-auto rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-medium text-accent-foreground group-data-[collapsible=icon]:hidden">
