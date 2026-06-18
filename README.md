@@ -59,13 +59,15 @@ src/
 ├── routes/                  # File-based routes (TanStack Router)
 │   ├── __root.tsx           # Root layout, <head>, error/404 boundaries
 │   ├── index.tsx            # /            — Dashboard
+│   ├── login.tsx            # /login       — Sign-in page
 │   ├── mail.tsx             # /mail        — Inbox (?q=&filter=)
 │   ├── calendar.tsx         # /calendar    — Calendar
-│   └── insights.tsx         # /insights    — AI insights
+│   ├── insights.tsx         # /insights    — AI insights
+│   └── settings.tsx         # /settings    — Profile, notifications, theme
 │
 ├── components/
 │   ├── app-shell.tsx        # Sidebar + header + main wrapper
-│   ├── app-header.tsx       # Top bar (search, theme, profile)
+│   ├── app-header.tsx       # Top bar (search, theme, profile, sign-out)
 │   ├── app-sidebar.tsx      # Left navigation
 │   ├── email-metrics.tsx    # 4 KPI cards
 │   ├── email-activity-chart.tsx
@@ -76,7 +78,8 @@ src/
 │   └── ui/                  # shadcn/ui primitives
 │
 ├── lib/
-│   ├── mock-data.ts         # 👈  ALL demo data lives here
+│   ├── auth.tsx             # 👈 Demo login/logout credentials
+│   ├── mock-data.ts         # 👈 ALL demo data lives here
 │   └── utils.ts
 │
 └── styles.css               # Tailwind v4 + design tokens
