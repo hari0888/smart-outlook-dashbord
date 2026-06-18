@@ -7,6 +7,7 @@ import {
   Bell,
   Settings,
   Inbox,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -26,6 +27,7 @@ const nav = [
   { title: "Email", url: "/mail", icon: Mail },
   { title: "Calendar", url: "/calendar", icon: Calendar },
   { title: "Insights", url: "/insights", icon: Sparkles },
+  { title: "Verify setup", url: "/verify", icon: ShieldCheck },
 ];
 
 const folders = [
