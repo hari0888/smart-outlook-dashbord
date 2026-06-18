@@ -20,6 +20,7 @@ import { useAuth } from "@/lib/auth";
 
 export function AppHeader() {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const [q, setQ] = useState("");
 
   const unread = emails.filter((e) => !e.isRead);
