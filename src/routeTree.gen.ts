@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as MailRouteImport } from './routes/mail'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as IndexRouteImport } from './routes/index'
@@ -23,6 +24,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const MailRoute = MailRouteImport.update({
   id: '/mail',
   path: '/mail',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InsightsRoute = InsightsRouteImport.update({
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
   '/insights': typeof InsightsRoute
+  '/login': typeof LoginRoute
   '/mail': typeof MailRoute
   '/settings': typeof SettingsRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
   '/insights': typeof InsightsRoute
+  '/login': typeof LoginRoute
   '/mail': typeof MailRoute
   '/settings': typeof SettingsRoute
 }
@@ -60,21 +68,30 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
   '/insights': typeof InsightsRoute
+  '/login': typeof LoginRoute
   '/mail': typeof MailRoute
   '/settings': typeof SettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/calendar' | '/insights' | '/mail' | '/settings'
+  fullPaths: '/' | '/calendar' | '/insights' | '/login' | '/mail' | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/calendar' | '/insights' | '/mail' | '/settings'
-  id: '__root__' | '/' | '/calendar' | '/insights' | '/mail' | '/settings'
+  to: '/' | '/calendar' | '/insights' | '/login' | '/mail' | '/settings'
+  id:
+    | '__root__'
+    | '/'
+    | '/calendar'
+    | '/insights'
+    | '/login'
+    | '/mail'
+    | '/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CalendarRoute: typeof CalendarRoute
   InsightsRoute: typeof InsightsRoute
+  LoginRoute: typeof LoginRoute
   MailRoute: typeof MailRoute
   SettingsRoute: typeof SettingsRoute
 }
@@ -93,6 +110,13 @@ declare module '@tanstack/react-router' {
       path: '/mail'
       fullPath: '/mail'
       preLoaderRoute: typeof MailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/insights': {
@@ -123,6 +147,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CalendarRoute: CalendarRoute,
   InsightsRoute: InsightsRoute,
+  LoginRoute: LoginRoute,
   MailRoute: MailRoute,
   SettingsRoute: SettingsRoute,
 }
