@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Search, Bell, Plug, Mail, Calendar, LogOut, User as UserIcon, Settings } from "lucide-react";
+import {
+  Search,
+  Bell,
+  Plug,
+  Mail,
+  Calendar,
+  LogOut,
+  User as UserIcon,
+  Settings,
+} from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -138,14 +147,19 @@ export function AppHeader() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="ml-1 flex items-center gap-2 rounded-md pl-2 pr-1 py-1 hover:bg-accent" aria-label="Account menu">
+            <button
+              className="ml-1 flex items-center gap-2 rounded-md pl-2 pr-1 py-1 hover:bg-accent"
+              aria-label="Account menu"
+            >
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">
                   {profile.initials}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden text-left lg:block">
-                <div className="text-xs font-semibold leading-tight">{user?.name ?? profile.name}</div>
+                <div className="text-xs font-semibold leading-tight">
+                  {user?.name ?? profile.name}
+                </div>
                 <div className="text-[11px] leading-tight text-muted-foreground">
                   {user?.email ?? profile.jobTitle}
                 </div>

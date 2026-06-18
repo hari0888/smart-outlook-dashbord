@@ -107,7 +107,13 @@ function SettingsPage() {
           </CardHeader>
           <CardContent>
             <Row
-              icon={isDark ? <Moon className="h-4 w-4 text-muted-foreground" /> : <Sun className="h-4 w-4 text-muted-foreground" />}
+              icon={
+                isDark ? (
+                  <Moon className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Sun className="h-4 w-4 text-muted-foreground" />
+                )
+              }
               title="Dark mode"
               description="Switch between light and dark themes."
               checked={isDark}

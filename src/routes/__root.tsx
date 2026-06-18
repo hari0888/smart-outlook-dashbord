@@ -75,14 +75,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Outlook AI — Smart Dashboard" },
-      { name: "description", content: "AI-powered Outlook dashboard with unified email, calendar, and smart insights." },
+      {
+        name: "description",
+        content: "AI-powered Outlook dashboard with unified email, calendar, and smart insights.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:title", content: "Outlook AI — Smart Dashboard" },
       { name: "twitter:title", content: "Outlook AI — Smart Dashboard" },
-      { property: "og:description", content: "AI-powered Outlook dashboard with unified email, calendar, and smart insights." },
-      { name: "twitter:description", content: "AI-powered Outlook dashboard with unified email, calendar, and smart insights." },
-      
+      {
+        property: "og:description",
+        content: "AI-powered Outlook dashboard with unified email, calendar, and smart insights.",
+      },
+      {
+        name: "twitter:description",
+        content: "AI-powered Outlook dashboard with unified email, calendar, and smart insights.",
+      },
     ],
     links: [
       {

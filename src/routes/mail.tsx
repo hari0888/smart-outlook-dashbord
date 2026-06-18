@@ -11,7 +11,7 @@ import { emails } from "@/lib/mock-data";
 
 const mailSearchSchema = z.object({
   q: z.string().optional(),
-  filter: z.enum(["all", "unread", "priority"]).optional(),
+  filter: z.enum(["all", "unread", "read", "priority"]).optional(),
 });
 
 export const Route = createFileRoute("/mail")({
@@ -30,7 +30,9 @@ export const Route = createFileRoute("/mail")({
 function MailPage() {
   const search = useSearch({ from: "/mail" });
   const [query, setQuery] = useState(search.q ?? "");
-  const [filter, setFilter] = useState<"all" | "unread" | "priority">(search.filter ?? "all");
+  const [filter, setFilter] = useState<"all" | "unread" | "read" | "priority">(
+    search.filter ?? "all",
+  );
 
   // Sync state when URL search params change (e.g., from sidebar or header search)
   useEffect(() => {
@@ -42,6 +44,7 @@ function MailPage() {
 
   const filtered = emails.filter((e) => {
     if (filter === "unread" && e.isRead) return false;
+    if (filter === "read" && !e.isRead) return false;
     if (filter === "priority" && !e.isPriority) return false;
     if (!query) return true;
     const q = query.toLowerCase();
@@ -86,6 +89,7 @@ function MailPage() {
             <TabsList>
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="unread">Unread</TabsTrigger>
+              <TabsTrigger value="read">Read</TabsTrigger>
               <TabsTrigger value="priority">Priority</TabsTrigger>
             </TabsList>
           </Tabs>
