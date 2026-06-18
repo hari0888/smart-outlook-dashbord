@@ -33,12 +33,11 @@ function DashboardPage() {
   const priority = emails.filter((e) => e.isPriority).length;
   const upcoming = events.filter((e) => new Date(e.end).getTime() > Date.now());
 
-  const greeting = (() => {
+  const [greeting, setGreeting] = useState("Hello");
+  useEffect(() => {
     const h = new Date().getHours();
-    if (h < 12) return "Good morning";
-    if (h < 18) return "Good afternoon";
-    return "Good evening";
-  })();
+    setGreeting(h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening");
+  }, []);
 
   return (
     <AppShell>
