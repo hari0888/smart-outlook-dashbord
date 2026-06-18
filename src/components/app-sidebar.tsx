@@ -29,8 +29,8 @@ const nav = [
 ];
 
 const folders = [
-  { title: "Inbox", url: "/mail", icon: Inbox, count: 3 },
-  { title: "Priority", url: "/mail?filter=priority", icon: Bell, count: 3 },
+  { title: "Inbox", url: "/mail", icon: Inbox, count: 3, filter: "all" as const },
+  { title: "Priority", url: "/mail", icon: Bell, count: 3, filter: "priority" as const },
 ];
 
 export function AppSidebar() {
@@ -80,7 +80,7 @@ export function AppSidebar() {
               {folders.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
-                    <Link to="/mail">
+                    <Link to="/mail" search={{ filter: item.filter }}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                       <span className="ml-auto rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-medium text-accent-foreground group-data-[collapsible=icon]:hidden">

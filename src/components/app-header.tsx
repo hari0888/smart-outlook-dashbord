@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Search, Bell, Plug } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
@@ -8,17 +10,28 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { profile } from "@/lib/mock-data";
 
 export function AppHeader() {
+  const navigate = useNavigate();
+  const [q, setQ] = useState("");
+
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur">
       <SidebarTrigger />
       <div className="hidden flex-1 md:block">
-        <div className="relative max-w-md">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            navigate({ to: "/mail", search: { q: q || undefined, filter: "all" } });
+          }}
+          className="relative max-w-md"
+        >
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
             placeholder="Search mail, events, people…"
             className="h-9 pl-9"
           />
-        </div>
+        </form>
       </div>
       <div className="ml-auto flex items-center gap-2">
         <Badge

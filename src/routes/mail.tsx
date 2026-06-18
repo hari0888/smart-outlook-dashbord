@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { Search } from "lucide-react";
+import { z } from "zod";
 import { AppShell } from "@/components/app-shell";
 import { EmailMetrics } from "@/components/email-metrics";
 import { RecentEmails } from "@/components/recent-emails";
@@ -8,7 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { emails } from "@/lib/mock-data";
 
+const mailSearchSchema = z.object({
+  q: z.string().optional(),
+  filter: z.enum(["all", "unread", "priority"]).optional(),
+});
+
 export const Route = createFileRoute("/mail")({
+  validateSearch: mailSearchSchema,
   head: () => ({
     meta: [
       { title: "Email — Outlook AI" },
@@ -21,8 +28,17 @@ export const Route = createFileRoute("/mail")({
 });
 
 function MailPage() {
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | "unread" | "priority">("all");
+  const search = useSearch({ from: "/mail" });
+  const [query, setQuery] = useState(search.q ?? "");
+  const [filter, setFilter] = useState<"all" | "unread" | "priority">(search.filter ?? "all");
+
+  // Sync state when URL search params change (e.g., from sidebar or header search)
+  useEffect(() => {
+    if (search.q !== undefined) setQuery(search.q);
+  }, [search.q]);
+  useEffect(() => {
+    if (search.filter) setFilter(search.filter);
+  }, [search.filter]);
 
   const filtered = emails.filter((e) => {
     if (filter === "unread" && e.isRead) return false;
