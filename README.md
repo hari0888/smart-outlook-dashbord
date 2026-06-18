@@ -87,6 +87,98 @@ src/
 
 ---
 
+## Pages Reference
+
+| Route | File | What it shows |
+| ----- | ---- | ------------- |
+| `/` | `src/routes/index.tsx` | Dashboard — greeting, email metrics, 7-day chart, recent emails, upcoming events, smart insights |
+| `/login` | `src/routes/login.tsx` | Sign-in page with email + password form |
+| `/mail` | `src/routes/mail.tsx` | Inbox — searchable, filterable email list (All / Unread / Priority) |
+| `/calendar` | `src/routes/calendar.tsx` | Calendar — today's timeline, "happening now", next 7 days |
+| `/insights` | `src/routes/insights.tsx` | Smart insights — AI summary cards and email activity chart |
+| `/settings` | `src/routes/settings.tsx` | Settings — profile fields, notification toggles, dark mode toggle |
+
+---
+
+## What to Change & Where (Line-by-Line)
+
+### 1. Change the demo login credentials
+**File:** `src/lib/auth.tsx`
+
+| Line | Current | Change to |
+| ---- | ------- | --------- |
+| 19 | `email: "demo@outlook.com"` | Your demo email |
+| 20 | `password: "demo123"` | Your demo password |
+
+### 2. Change the profile name / email / job title shown across the app
+**File:** `src/lib/mock-data.ts`
+
+| Line | Field | Current value |
+| ---- | ----- | ------------- |
+| 195 | `name` | `"Alex Morgan"` |
+| 196 | `email` | `"alex.morgan@contoso.com"` |
+| 197 | `jobTitle` | `"Senior Product Manager"` |
+| 198 | `initials` | `"AM"` |
+
+These values appear in:
+- Dashboard greeting (`src/routes/index.tsx` line 47)
+- Header avatar and dropdown (`src/components/app-header.tsx` lines 144, 148, 150)
+- Settings profile form (`src/routes/settings.tsx` lines 57, 61, 65)
+
+### 3. Change demo emails
+**File:** `src/lib/mock-data.ts` — lines 32-121
+
+Edit the `emails` array directly. Each entry has:
+- `from.name`, `from.email` — sender
+- `subject`, `preview` — content
+- `receivedAt` — timestamp (auto-generated relative to now)
+- `isRead`, `isPriority` — flags
+
+### 4. Change demo calendar events
+**File:** `src/lib/mock-data.ts` — lines 123-192
+
+Edit the `events` array directly. Each entry has:
+- `title`, `organizer`, `attendees`, `location`
+- `start`, `end` — timestamps (auto-generated relative to now)
+- `meetingLink` — optional Teams/Zoom link
+
+### 5. Change the 7-day email activity chart data
+**File:** `src/lib/mock-data.ts` — lines 202-210
+
+Edit the `emailActivity` array. Each object is `{ day: string, received: number, sent: number }`.
+
+### 6. Change the smart insights text
+**File:** `src/lib/mock-data.ts` — lines 212-223
+
+Edit the `insights` object:
+- `unreadSummary` — summary paragraph
+- `dailyAgenda` — agenda paragraph
+- `priorities` — array of 4 bullet strings
+
+### 7. Remove the "Demo data" badge from the header
+**File:** `src/components/app-header.tsx`
+
+Delete lines 57-63 (the `<Badge>` block with `<Plug className="h-3 w-3" /> Demo data`).
+
+### 8. Change sidebar navigation labels or add new pages
+**File:** `src/components/app-sidebar.tsx`
+
+- Lines 24-29 — main nav items (Dashboard, Email, Calendar, Insights)
+- Lines 31-34 — folder shortcuts (Inbox, Priority) with badge counts
+- Lines 98-109 — footer link (Settings)
+
+### 9. Change page titles / SEO meta tags
+Each route file has a `head()` block near the top. Example:
+
+- `src/routes/index.tsx` lines 12-26
+- `src/routes/login.tsx` lines 11-16
+- `src/routes/mail.tsx` lines 19-26
+- `src/routes/calendar.tsx` lines 8-18
+- `src/routes/insights.tsx` lines 7-19
+- `src/routes/settings.tsx` lines 13-17
+
+---
+
 ## Demo Data
 
 Every screen reads from a single file:
