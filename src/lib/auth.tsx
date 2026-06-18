@@ -16,7 +16,7 @@ import {
  */
 
 export const DEMO_CREDENTIALS = {
-  email: "demo@example.com",
+  email: "demo@outlook.com",
   password: "demo123",
 };
 
