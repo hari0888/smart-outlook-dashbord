@@ -136,19 +136,49 @@ export function AppHeader() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="ml-1 flex items-center gap-2 pl-2">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">
-              {profile.initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="hidden text-left lg:block">
-            <div className="text-xs font-semibold leading-tight">{profile.name}</div>
-            <div className="text-[11px] leading-tight text-muted-foreground">
-              {profile.jobTitle}
-            </div>
-          </div>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="ml-1 flex items-center gap-2 rounded-md pl-2 pr-1 py-1 hover:bg-accent" aria-label="Account menu">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">
+                  {profile.initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="hidden text-left lg:block">
+                <div className="text-xs font-semibold leading-tight">{user?.name ?? profile.name}</div>
+                <div className="text-[11px] leading-tight text-muted-foreground">
+                  {user?.email ?? profile.jobTitle}
+                </div>
+              </div>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>
+              <div className="text-sm font-medium">{user?.name ?? profile.name}</div>
+              <div className="text-xs font-normal text-muted-foreground">{user?.email}</div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
+              <UserIcon className="mr-2 h-4 w-4" />
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                signOut();
+                navigate({ to: "/login" });
+              }}
+              className="text-destructive focus:text-destructive"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
