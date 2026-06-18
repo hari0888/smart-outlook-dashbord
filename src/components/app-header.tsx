@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Search, Bell, Plug, Mail, Calendar } from "lucide-react";
+import { Search, Bell, Plug, Mail, Calendar, LogOut, User as UserIcon, Settings } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { emails, events, profile } from "@/lib/mock-data";
+import { useAuth } from "@/lib/auth";
 
 export function AppHeader() {
   const navigate = useNavigate();
