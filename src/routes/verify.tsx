@@ -150,11 +150,14 @@ function VerifyPage() {
   const total = steps.length;
 
   return (
-    <AppShell
-      title="Setup verification"
-      subtitle="Step through login, profile, email, and calendar to confirm everything is wired up."
-    >
+    <AppShell>
       <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Setup verification</h1>
+          <p className="text-sm text-muted-foreground">
+            Step through login, profile, email, and calendar to confirm everything is wired up.
+          </p>
+        </div>
         <Card>
           <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
             <div>
