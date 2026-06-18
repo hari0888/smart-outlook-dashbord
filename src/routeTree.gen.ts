@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as MailRouteImport } from './routes/mail'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MailRoute = MailRouteImport.update({
   id: '/mail',
   path: '/mail',
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof CalendarRoute
   '/insights': typeof InsightsRoute
   '/mail': typeof MailRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
   '/insights': typeof InsightsRoute
   '/mail': typeof MailRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,14 @@ export interface FileRoutesById {
   '/calendar': typeof CalendarRoute
   '/insights': typeof InsightsRoute
   '/mail': typeof MailRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/calendar' | '/insights' | '/mail'
+  fullPaths: '/' | '/calendar' | '/insights' | '/mail' | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/calendar' | '/insights' | '/mail'
-  id: '__root__' | '/' | '/calendar' | '/insights' | '/mail'
+  to: '/' | '/calendar' | '/insights' | '/mail' | '/settings'
+  id: '__root__' | '/' | '/calendar' | '/insights' | '/mail' | '/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,10 +76,18 @@ export interface RootRouteChildren {
   CalendarRoute: typeof CalendarRoute
   InsightsRoute: typeof InsightsRoute
   MailRoute: typeof MailRoute
+  SettingsRoute: typeof SettingsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mail': {
       id: '/mail'
       path: '/mail'
@@ -107,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarRoute: CalendarRoute,
   InsightsRoute: InsightsRoute,
   MailRoute: MailRoute,
+  SettingsRoute: SettingsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
