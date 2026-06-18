@@ -201,91 +201,147 @@ You can edit any of these arrays/objects and the entire UI updates immediately.
 
 ---
 
-## Replacing Demo Data With Real Microsoft Graph Data
+## Switching to Real Outlook Login (Microsoft OAuth)
 
-The whole point of isolating data into `mock-data.ts` is that **you only need
-to change that one file** to plug in real data.
+Follow these 5 steps **in order**. If you do all of them, you'll be able to sign in
+with your real Outlook / Microsoft 365 account and the dashboard will load your
+real mail + calendar. Files you'll touch are listed for each step.
 
 ### Step 1 — Register an app in Microsoft Entra (Azure AD)
 
 1. Go to <https://entra.microsoft.com> → **App registrations** → **New registration**.
-2. Set a redirect URI: `http://localhost:5173/auth/callback` (and your prod URL).
-3. Under **API permissions**, add the following **delegated** Microsoft Graph permissions:
-   - `User.Read`
-   - `Mail.Read`
-   - `Calendars.Read`
-   - `offline_access`
-4. Save the **Application (client) ID** and **Tenant ID**.
+2. **Supported account types:** "Accounts in any organizational directory and personal Microsoft accounts".
+3. **Redirect URI** → platform **Single-page application (SPA)** → add BOTH:
+   - `http://localhost:5173` (for `bun run dev`)
+   - Your production URL, e.g. `https://your-app.lovable.app`
+4. After it's created, open **API permissions** → **Add a permission** → **Microsoft Graph** → **Delegated**, and add:
+   `User.Read`, `Mail.Read`, `Calendars.Read`, `offline_access`. Click **Grant admin consent** if available.
+5. Copy the **Application (client) ID** and **Directory (tenant) ID** from the Overview page.
+   Use `common` as the tenant if you want both personal and work accounts to sign in.
 
-### Step 2 — Add OAuth 2.0 (PKCE) sign-in
-
-Use Microsoft's official library, MSAL.js:
+### Step 2 — Install MSAL and add env vars
 
 ```bash
-bun add @azure/msal-browser
+bun add @azure/msal-browser @azure/msal-react
 ```
 
-Create `src/lib/auth.ts`:
+Create a `.env` file in the project root (do NOT commit it):
 
-```ts
-import { PublicClientApplication } from "@azure/msal-browser";
+```env
+VITE_MS_CLIENT_ID=<paste Application (client) ID here>
+VITE_MS_TENANT_ID=common
+```
+
+### Step 3 — Replace `src/lib/auth.tsx` with the MSAL version
+
+**File:** `src/lib/auth.tsx` — replace the ENTIRE file with this. The exports
+(`AuthProvider`, `useAuth`, `AuthUser`) stay the same so nothing else breaks:
+
+```tsx
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { PublicClientApplication, EventType, type AccountInfo } from "@azure/msal-browser";
+import { MsalProvider, useMsal } from "@azure/msal-react";
+
+export const SCOPES = ["User.Read", "Mail.Read", "Calendars.Read", "offline_access"];
 
 export const msal = new PublicClientApplication({
   auth: {
     clientId: import.meta.env.VITE_MS_CLIENT_ID!,
     authority: `https://login.microsoftonline.com/${import.meta.env.VITE_MS_TENANT_ID}`,
-    redirectUri: window.location.origin + "/auth/callback",
+    redirectUri: typeof window !== "undefined" ? window.location.origin : "/",
   },
-  cache: { cacheLocation: "localStorage" }, // refresh tokens handled by MSAL
+  cache: { cacheLocation: "localStorage" },
 });
 
-export const SCOPES = ["User.Read", "Mail.Read", "Calendars.Read", "offline_access"];
+// Required by MSAL v3+ before any other call
+await msal.initialize();
+msal.addEventCallback((e) => {
+  if (e.eventType === EventType.LOGIN_SUCCESS && e.payload && "account" in e.payload) {
+    msal.setActiveAccount((e.payload as { account: AccountInfo }).account);
+  }
+});
 
-export async function getAccessToken() {
-  const account = msal.getAllAccounts()[0];
+export type AuthUser = { email: string; name: string; initials: string };
+
+function toUser(acc: AccountInfo): AuthUser {
+  const name = acc.name || acc.username;
+  const initials = name.split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
+  return { email: acc.username, name, initials };
+}
+
+type AuthContextValue = {
+  user: AuthUser | null;
+  ready: boolean;
+  signIn: () => Promise<void>;            // no args — opens Microsoft popup
+  signOut: () => void;
+};
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+function InnerProvider({ children }: { children: ReactNode }) {
+  const { instance, accounts } = useMsal();
+  const [ready, setReady] = useState(false);
+  useEffect(() => { setReady(true); }, []);
+
+  const user = accounts[0] ? toUser(accounts[0]) : null;
+
+  const signIn = async () => {
+    const res = await instance.loginPopup({ scopes: SCOPES, prompt: "select_account" });
+    instance.setActiveAccount(res.account);
+  };
+  const signOut = () => { instance.logoutPopup(); };
+
+  return <AuthContext.Provider value={{ user, ready, signIn, signOut }}>{children}</AuthContext.Provider>;
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  return <MsalProvider instance={msal}><InnerProvider>{children}</InnerProvider></MsalProvider>;
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
+  return ctx;
+}
+
+export async function getAccessToken(): Promise<string> {
+  const account = msal.getActiveAccount() ?? msal.getAllAccounts()[0];
   if (!account) throw new Error("Not signed in");
-  const result = await msal.acquireTokenSilent({ account, scopes: SCOPES });
-  return result.accessToken;
+  const res = await msal.acquireTokenSilent({ account, scopes: SCOPES });
+  return res.accessToken;
 }
 ```
 
-Add a `.env` file (never commit it):
+### Step 4 — Update `src/routes/login.tsx` to use the Microsoft popup
 
-```env
-VITE_MS_CLIENT_ID=your-client-id
-VITE_MS_TENANT_ID=common
+The current login page uses an email + password form. MSAL doesn't take a
+password — it opens Microsoft's own sign-in window. Replace the form body:
+
+1. Remove the `email`, `password`, `error`, and `DEMO_CREDENTIALS` imports/state.
+2. Replace the `<form>` (lines 55-102) with a single button:
+
+```tsx
+<Button className="w-full" disabled={busy} onClick={async () => {
+  setBusy(true);
+  try { await signIn(); navigate({ to: "/" }); }
+  finally { setBusy(false); }
+}}>
+  {busy ? "Opening Microsoft…" : "Sign in with Microsoft"}
+</Button>
 ```
 
-### Step 3 — Replace `src/lib/mock-data.ts`
+3. Update the destructure on line 21 to `const { user, ready, signIn } = useAuth();`
+   (no email/password args — `signIn()` takes nothing).
 
-Keep the **same exports and the same types** so no component needs to change.
-Here is a drop-in template:
+### Step 5 — Swap mock data for Microsoft Graph calls
+
+**File:** `src/lib/mock-data.ts` — keep the same exports/types so no component
+needs to change. Replace the hardcoded `emails`, `events`, and `profile` with
+async fetchers, then call them with TanStack Query in each route:
 
 ```ts
-// src/lib/mock-data.ts  (now real-data.ts in spirit)
+// src/lib/mock-data.ts
 import { getAccessToken } from "./auth";
-
-export type Email = {
-  id: string;
-  from: { name: string; email: string };
-  subject: string;
-  preview: string;
-  receivedAt: string;
-  isRead: boolean;
-  isPriority: boolean;
-  folder: "inbox" | "sent" | "drafts";
-};
-
-export type CalendarEvent = {
-  id: string;
-  title: string;
-  organizer: string;
-  attendees: string[];
-  location: string;
-  start: string;
-  end: string;
-  meetingLink?: string;
-};
 
 async function graph<T>(path: string): Promise<T> {
   const token = await getAccessToken();
@@ -296,19 +352,13 @@ async function graph<T>(path: string): Promise<T> {
   return res.json();
 }
 
-// Use TanStack Query in components to call these, or pre-export resolved data.
-// Easiest path: keep file synchronous by pre-fetching into React Query in a loader.
-
 export async function fetchEmails(): Promise<Email[]> {
   const data = await graph<{ value: any[] }>(
     "/me/messages?$top=25&$select=id,from,subject,bodyPreview,receivedDateTime,isRead,importance",
   );
   return data.value.map((m) => ({
     id: m.id,
-    from: {
-      name: m.from?.emailAddress?.name ?? "Unknown",
-      email: m.from?.emailAddress?.address ?? "",
-    },
+    from: { name: m.from?.emailAddress?.name ?? "Unknown", email: m.from?.emailAddress?.address ?? "" },
     subject: m.subject ?? "(no subject)",
     preview: m.bodyPreview ?? "",
     receivedAt: m.receivedDateTime,
@@ -338,49 +388,40 @@ export async function fetchEvents(): Promise<CalendarEvent[]> {
 
 export async function fetchProfile() {
   const me = await graph<any>("/me");
-  const initials = (me.displayName ?? "U U")
-    .split(" ").map((s: string) => s[0]).slice(0, 2).join("");
-  return {
-    name: me.displayName,
-    email: me.userPrincipalName,
-    jobTitle: me.jobTitle ?? "",
-    initials,
-  };
+  const initials = (me.displayName ?? "U U").split(" ").map((s: string) => s[0]).slice(0, 2).join("");
+  return { name: me.displayName, email: me.userPrincipalName, jobTitle: me.jobTitle ?? "", initials };
 }
 ```
 
-### Step 4 — Switch components to React Query
-
-Replace the synchronous imports in each route with `useQuery`:
+Then in each route (e.g. `src/routes/mail.tsx`):
 
 ```tsx
-// before
-import { emails } from "@/lib/mock-data";
-
-// after
 import { useQuery } from "@tanstack/react-query";
 import { fetchEmails } from "@/lib/mock-data";
 
-const { data: emails = [] } = useQuery({
-  queryKey: ["emails"],
-  queryFn: fetchEmails,
-  staleTime: 60_000,
-});
+const { data: emails = [] } = useQuery({ queryKey: ["emails"], queryFn: fetchEmails, staleTime: 60_000 });
 ```
 
-The "Demo data" badge in the header (`src/components/app-header.tsx`) can be
-removed once you're on live data.
+### Verification checklist
 
-### Step 5 — Smart insights with AI (optional)
+After all 5 steps:
 
-The `insights` object on the dashboard is currently hard-coded. To make it
-real, send the unread emails + today's events to any LLM (OpenAI, Azure
-OpenAI, etc.) with a prompt like:
+- [ ] `.env` contains `VITE_MS_CLIENT_ID` and `VITE_MS_TENANT_ID`
+- [ ] Your dev URL (`http://localhost:5173`) is in the Entra app's SPA redirect URIs
+- [ ] `bun run dev` starts without `Failed to resolve import "@azure/msal-..."` errors
+- [ ] Visiting `/login` shows a single **"Sign in with Microsoft"** button
+- [ ] Clicking it opens a real `login.microsoftonline.com` popup
+- [ ] After consent, the dashboard greeting shows YOUR real name, and `/mail` lists YOUR real messages
 
-> "Summarize my unread email, describe my day, and list my top 4 priorities."
+### Common pitfalls
 
-Then map the response into the same `{ unreadSummary, dailyAgenda, priorities }`
-shape that `SmartInsights` already expects.
+| Symptom | Fix |
+| ------- | --- |
+| `AADSTS9002326` / "redirect URI mismatch" | The URL in the browser must EXACTLY match one of the Entra SPA redirect URIs (scheme + host + port, no trailing slash). |
+| `AADSTS65001` / consent required | Click **Grant admin consent** in Entra, or sign in with an account that can consent. |
+| Popup blocked | Trigger `signIn()` from a user click handler (don't auto-call it on mount). |
+| `Graph error 401` | Token expired or scope missing — re-check the 4 delegated permissions in Step 1. |
+| Sign-in works but data is empty | You probably forgot Step 5 — components are still importing the (now-removed) demo arrays. Switch them to `useQuery`. |
 
 ---
 
